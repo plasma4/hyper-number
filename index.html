@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="utf-8">
+
+<head>
+    <title>HyperNumber</title>
+    <style>
+        * {
+            font-size: 30px;
+            user-select: none;
+            font-family: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS";
+            color: white;
+        }
+
+        html {
+            background-color: black;
+        }
+
+        input {
+            color: black;
+            border-radius: 8px;
+            border: solid 3px #aaa;
+        }
+
+        code {
+            display: block;
+            font-size: 25px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            user-select: text;
+        }
+
+        a {
+            display: inline-block;
+            transition: transform.2s .1s;
+            color: #2a4
+        }
+
+        a:hover {
+            color: #184;
+            transform: scale(1.02)
+        }
+
+        a:active {
+            color: #062;
+            transform: scale(1.05)
+        }
+
+        a:link {
+            font-weight: 600;
+            color: #1ae
+        }
+
+        a:hover:link {
+            color: #079
+        }
+
+        a:active:link {
+            color: #056
+        }
+    </style>
+
+    <script src="hyper.js"></script>
+</head>
+
+<body>
+    <b>Introducing hyper.js: a high-precision googology calculator</b>
+    <br>
+    <a href="https://github.com/plasma4/hyper-number/blob/main/hyper.js">View the source code</a>
+    <br>
+    Example (customizable precision but set to 25 digits for this example):
+    <br>
+    <input placeholder="Input value here...">
+    <br>
+    <code></code>
+    <script>
+        Hyper.setDigits(25)
+        document.getElementsByTagName("input")[0].addEventListener("input", function(e) {
+            var result = new Hyper(e.target.value)
+            document.getElementsByTagName("code")[0].textContent = result + "\r\nRaw data: [ " + result.$.join(", ") + " ]\r\nFormatted as integer: " + result.format() + "\r\nFormatted as currency: $" + result.format(2)
+        })
+    </script>
+</body>
+</html>
