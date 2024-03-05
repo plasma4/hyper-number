@@ -844,6 +844,7 @@ var Hyper
                 multiplied /= 10n
                 digits--
             }
+            b.$[1] = 1
             b.$[3] = multiplied
         } else if (c1 === 2 && c2 === 1) {
             var d1 = start.$[2]
