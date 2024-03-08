@@ -1134,9 +1134,10 @@ var Hyper
     }
 
     function HyperPower(start, exponent) {
-        var power = new Hyper(exponent), recip = false
+        var power = new Hyper(exponent)
         if (power.$[0] !== 1) {
-            recip = true
+            power.$[0] = 1
+            return HyperPower(start, power).recip(true)
         }
         if (power.$[2] >= HDIGITS) {
             power = power.mul(start.log10())
@@ -1160,9 +1161,8 @@ var Hyper
             return fastExp(start, exponent)
         }
 
-        var power = new Hyper(exponent)
         var result = fastExp(start, power.$[3] / (10n ** (BIGDIGITSMINUSONE - BigInt(power.$[2]))))
-        return recip ? result.recip() : result
+        return result
     }
 
     function HyperLog10(start, noClone, divAmount) {
