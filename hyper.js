@@ -1829,7 +1829,7 @@ var Hyper
      */
     Hyper.pow10Repeat = function (value, iterations) {
         if (typeof iterations === "number") {
-            iterations = BigInt(exponent)
+            iterations = BigInt(iterations)
         } else if (typeof iterations !== "bigint") {
             var repeats = new Hyper(iterations)
             iterations = repeats.$[3] / (10n ** (BIGDIGITSMINUSONE - BigInt(repeats.$[2])))
