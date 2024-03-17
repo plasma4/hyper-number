@@ -650,7 +650,7 @@ var Hyper
                 sum = start.$[3] + b.$[3] / (10n ** diff)
             } else {
                 if (d2 - d1 > DIGITSMINUSONE) {
-                    return num
+                    return b
                 }
                 sum = start.$[3] / (10n ** -diff) + b.$[3]
             }
@@ -805,7 +805,7 @@ var Hyper
                 sum = start.$[3] - b.$[3] / (10n ** diff)
             } else {
                 if (d2 - d1 > DIGITSMINUSONE) {
-                    return num
+                    return b
                 }
                 sum = start.$[3] / (10n ** -diff) - b.$[3]
             }
