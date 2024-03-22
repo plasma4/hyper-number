@@ -714,7 +714,7 @@ var Hyper
             var d1 = start.$[2]
             var minorPart = b.$[2]
             var d2 = BigInt(minorPart.toString().length - 1)
-            var diff = d2 - d1
+            var diff = d1 - d2
             if (diff > DIGITSMINUSONE) {
                 return new Hyper(start)
             }
@@ -737,7 +737,7 @@ var Hyper
             if (diff > DIGITSMINUSONE) {
                 return b
             }
-            var sum = b.$[3] + minorPart / (10n ** diff)
+            var sum = b.$[3] / (10n ** diff) + minorPart
             if (sum >= BIGLIMIT) {
                 if (d2 === LIMITMINUSONE) {
                     b.$ = [sign, 3, BIGDIGITS, BIGONE]
