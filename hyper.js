@@ -714,7 +714,7 @@ var Hyper
             var d1 = start.$[2]
             var minorPart = b.$[2]
             var d2 = BigInt(minorPart.toString().length - 1)
-            var diff = d1 - d2
+            var diff = d2 - d1
             if (diff > DIGITSMINUSONE) {
                 return new Hyper(start)
             }
