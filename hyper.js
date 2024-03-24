@@ -506,12 +506,12 @@ var Hyper
                     if (start.$[3] === b.$[3]) {
                         return new Hyper()
                     }
-                    return start.$[3] > b.$[3] ? new Hyper(start) : b
+                    return start.$[3] > b.$[3] ? new Hyper(start) : false
                 } else {
-                    return start.$[2] > b.$[2] ? new Hyper(start) : b
+                    return start.$[2] > b.$[2] ? new Hyper(start) : false
                 }
             } else {
-                return c1 > c2 ? new Hyper(start) : b
+                return c1 > c2 ? new Hyper(start) : false
             }
         } else if (c1 === c2) {
             if (start.$[2] === b.$[2]) {
