@@ -1138,15 +1138,13 @@ var Hyper
         if (power.$[0] !== 1) {
             power.$[0] = 1
             return HyperPower(start, power).recip(true)
-        }
-        if (power.$[2] >= HDIGITS) {
+        } else if (power.$[2] >= HDIGITS) {
             power = power.mul(start.log10())
             var category = power.$[1]
             if (category < 2) {
                 power.$[1] = 2
                 power.$[2] = BigInt(power.$[2])
             } else {
-                var category = power.$[1]
                 if (category === LIMITMINUSONE) {
                     throw new RangeError("The resulting value is too large!")
                 }
