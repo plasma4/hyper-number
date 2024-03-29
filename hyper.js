@@ -1,3 +1,59 @@
+// HyperNumber is a high speed and high precision number system!
+function formatValue(number, additionalDigits) {
+    if (number instanceof Hyper) {
+        return number.format(additionalDigits)
+    }
+    var isBig = typeof number === "bigint" || typeof number === "string"
+    if (!isBig && typeof number !== "number") {
+        console.error("Cannot format a " + (typeof number) + " because it is not a string, number, BigInt, or HyperNumber.")
+    } else if (typeof number === "number" && number >= 1e21) {
+        number = BigInt(number)
+    }
+    var string = number.toString(), afterDots = ".", dotIndex = string.indexOf(".")
+    if (dotIndex !== -1) {
+        afterDots = string.slice(dotIndex)
+        string = string.slice(0, dotIndex)
+        if (dotIndex === 0) {
+            string = "0"
+        }
+    }
+
+    if (number < 1e7) {
+        string = string.replace(/\B(?=(.{3})+(?!.))/g, ",")
+        if (additionalDigits != null && additionalDigits != 0) {
+            additionalDigits = parseInt(additionalDigits)
+            if (!isFinite(additionalDigits) || additionalDigits > 1000000) {
+                throw RangeError("Precision " + additionalDigits + " is out of range.")
+            }
+            var diff = additionalDigits - afterDots.length + 1
+            string += (diff < 0 ? afterDots.slice(0, additionalDigits + 1) : (afterDots + "0".repeat(diff)))
+        }
+        return string
+    }
+    var length = string.length
+    var eIndex = string.indexOf("e")
+    if (eIndex !== -1) {
+        length = Number(string.slice(eIndex + 2))
+        string = string.slice(0, eIndex)
+    }
+
+    if (length > Math.min(abbreviationLimit, 303)) {
+        if (isBig) {
+            return string[0] + "." + string[1] + string[2] + string[3] + "e" + (length - 1)
+        }
+        return (string.charCodeAt(1) === 46 ? (string + "000").slice(0, 4) : (string + ".00")) + "e" + length
+    }
+    var mod3 = length % 3
+    var thousandPower = Math.floor((length - 1) / 3)
+    if (mod3 === 0) {
+        return string[0] + string[1] + string[2] + "." + string[3] + string[4] + shortSuffixes[thousandPower]
+    } else if (mod3 === 1) {
+        return string[0] + "." + string[1] + string[2] + string[3] + shortSuffixes[thousandPower]
+    } else if (mod3 === 2) {
+        return string[0] + string[1] + "." + string[2] + string[3] + string[4] + shortSuffixes[thousandPower]
+    }
+}
+
 /** @type {string[]} An array with abbreviations for numbers up to a whole lot (will not work properly if suffixes are more than 2 letters) */
 var shortSuffixes = ["", "K", "M", "B", "T", "q", "Q", "s", "S", "O", "N", "D", "Ud", "Dd", "Td", "qd", "Qd", "sd", "Sd", "Od", "Nd", "V", "Uv", "Dv", "Tv", "qv", "Qv", "sv", "Sv", "Ov", "Nv", "t", "Ut", "Dt", "Tt", "qt", "Qt", "st", "St", "Ot", "Nt", "qr", "Uq", "Dq", "Tq", "qq", "Qq", "sq", "Sq", "Oq", "Nq", "Qu", "UQ", "DQ", "TQ", "qQ", "QQ", "sQ", "SQ", "OQ", "NQ", "Sg", "Us", "Ds", "Ts", "qs", "Qs", "ss", "Ss", "Os", "Ns", "Sp", "US", "DS", "TS", "qS", "QS", "sS", "SS", "OS", "NS", "Og", "Uo", "Do", "To", "qo", "Qo", "so", "So", "Oo", "No", "Na", "Un", "Dn", "Tn", "qn", "Qn", "sn", "Sn", "On", "Nn", "C", "UC", "DC", "TC", "qC", "QC", "sC", "SC", "OC", "NC"]
 /** @type {string[]} An array with LOWERCASE abbreviations for numbers up to a decillion (only works for one-letter lowercase suffixes) */
@@ -16,7 +72,7 @@ var Hyper
      * @param {string | number | bigint | Hyper} value The value to set the number to. The inputs "pi" or "e" are also accepted, as well has Hypers.
      * @yields {Hyper}
      */
-    window.Hyper = function (value, noWarnings) {
+    Hyper = function (value, noWarnings) {
         if (!(this instanceof Hyper)) {
             return new Hyper(value)
         } else if (value == null || value === false || value === 0) {
@@ -256,7 +312,7 @@ var Hyper
                     } else if (digits < DIGITSOFDIGITS) {
                         var value = bigPart / 10n ** BigInt(HDIGITS - digits - 1)
                         if (value < BIGDIGITS) {
-                        dollar = [sign, eTotal - 1n, 10n ** value, BIGONE]
+                            dollar = [sign, eTotal - 1n, 10n ** value, BIGONE]
                         } else {
                             dollar = [sign, eTotal, value, BIGONE]
                         }
@@ -317,13 +373,14 @@ var Hyper
             var category = dollar[1]
             if (category < 9007199254740992n) {
                 dollar[1] = Number(category)
-            } else if (category > BIGLIMIT) {
-                // Change the BIGLIMIT value to something else to modify the maximum F amount
-                if (!noWarnings) {
-                    console.error("The value you have inputted is too large!")
-                }
-                dollar = [dollar[0], 0, 0, 0n]
             }
+            // Ignore the limit
+            // else if (category > BIGLIMIT) {
+            //     if (!noWarnings) {
+            //         console.error("The value you have inputted is too large!")
+            //     }
+            //     dollar = [dollar[0], 0, 0, 0n]
+            // }
             this.$ = dollar
         }
     }
@@ -982,18 +1039,13 @@ var Hyper
             var oldDigits = value.$[2]
             var newDigits = oldDigits << 1n
             if (multiplied >= DOUBLELIMIT) {
-                newDigits++
-                if (newDigits >= BIGLIMIT) {
+                if (++newDigits >= BIGLIMIT) {
                     value.$ = [1, 2, BIGDIGITS, oldDigits / 10n]
                     return value
                 }
                 value.$[3] = multiplied / BIGLIMIT
             } else {
                 value.$[3] = multiplied / BIGONE
-                if (newDigits >= BIGLIMIT) {
-                    value.$ = [1, 2, BIGDIGITS, oldDigits / 10n]
-                    return value
-                }
             }
             value.$[2] = newDigits
         } else if (category === 2) {
@@ -1122,15 +1174,15 @@ var Hyper
         var newBase = new Hyper(base)
         while (exponent > 1n) {
             if (exponent % 2n === 1n) {
-                y = y.mul(newBase)
+                y = HyperMultiply(newBase, y)
                 exponent--
             }
 
-            newBase = newBase.sqr(true)
+            HyperSquare(newBase, true)
             exponent >>= 1n
         }
 
-        return newBase.mul(y)
+        return HyperMultiply(newBase, y)
     }
 
     function HyperPower(start, exponent) {
@@ -1139,15 +1191,17 @@ var Hyper
             power.$[0] = 1
             return HyperPower(start, power).recip(true)
         } else if (power.$[2] >= HDIGITS) {
-            power = power.mul(start.log10())
+            power = HyperMultiply(power, HyperLog10(start))
             var category = power.$[1]
             if (category < 2) {
                 power.$[1] = 2
                 power.$[2] = BigInt(power.$[2])
             } else {
-                if (category === LIMITMINUSONE) {
-                    throw new RangeError("The resulting value is too large!")
-                }
+                // var category = power.$[1]
+                // Ignore the limit
+                // if (category === LIMITMINUSONE) {
+                //     throw new RangeError("The resulting value is too large!")
+                // }
                 power.$[1]++
             }
             return power
@@ -1170,8 +1224,13 @@ var Hyper
         } else if (category >= 2) {
             var value = noClone ? start : new Hyper(start)
             if (category === 2) {
-                value.$[1] = 0
-                value.$[2] = Number(value.$[2])
+                var digitValue = value.$[2]
+                if (digitValue < 9007199254740992n) {
+                    value.$[1] = 0
+                    value.$[2] = Number(value.$[2])
+                } else {
+                    value.$[1] = 1
+                }
             } else {
                 value.$[1]--
             }
@@ -1189,7 +1248,7 @@ var Hyper
             result = HyperAdd(HyperMultiply(fastLog(start, noClone), LOG10_E), digits)
         }
         if (divAmount != null) {
-            result = result.div(divAmount)
+            result = HyperDivide(result, divAmount)
         }
 
         if (noClone) {
@@ -1757,13 +1816,13 @@ var Hyper
         var category = this.$[1]
         if (category >= 2) {
             if (category >= 1e7) {
-                return (this.$[0] === 1 ? "" : "-") + "F" + formatValue(++category)
+                return sign + "F" + formatValue(category + (typeof category === "bigint" ? 2n : 2))
             }
             var part1 = this.$[2]
             var part2 = this.$[3].toString()
             if (category >= 5) {
                 var finalPart
-                if (part1 < 1000n && category < 1000) {
+                if (part1 < 1000n) {
                     var hyperData = new Hyper(part2)
                     hyperData.$[2] -= 49
                     hyperData = hyperData.log10(true).add(part1)
@@ -1776,7 +1835,7 @@ var Hyper
                 } else {
                     finalPart = formatValue(part1)
                 }
-                return sign + finalPart + "F" + category.toString().replace(/\B(?=(.{3})+(?!.))/g, ",")
+                return sign + finalPart + "|F" + category.toString().replace(/\B(?=(.{3})+(?!.))/g, ",")
             } else {
                 return sign + ("e".repeat(--category) + part2[0] + "." + part2.slice(1, 4) + "e" + formatValue(part1))
             }
@@ -1827,7 +1886,7 @@ var Hyper
      */
     Hyper.pow10Repeat = function (value, iterations) {
         if (typeof iterations === "number") {
-            iterations = BigInt(iterations)
+            iterations = BigInt(exponent)
         } else if (typeof iterations !== "bigint") {
             var repeats = new Hyper(iterations)
             iterations = repeats.$[3] / (10n ** (BIGDIGITSMINUSONE - BigInt(repeats.$[2])))
@@ -1838,9 +1897,10 @@ var Hyper
             value = HyperPower(TEN, value)
         }
         var newCategory = BigInt(value.$[1]) + i
-        if (newCategory >= BIGLIMIT) {
-            throw new RangeError("The resulting value is too large!")
-        }
+        // Ignore the limit
+        // if (newCategory >= BIGLIMIT) {
+        //     throw new RangeError("The resulting value is too large!")
+        // }
         value.$[1] = newCategory < 9007199254740992n ? Number(newCategory) : newCategory
         return value
     }
@@ -1852,14 +1912,17 @@ var Hyper
      */
     Hyper.prototype.pow10Repeat = function (iterations) {
         if (typeof iterations === "number") {
-            iterations = BigInt(exponent)
+            iterations = BigInt(iterations)
         } else if (typeof iterations !== "bigint") {
             var repeats = new Hyper(iterations)
             var digits = repeats.$[2]
-            if (digits >= BIGDIGITS) {
-                throw new RangeError("The amount of iterations is too large!")
-            }
-            iterations = repeats.$[3] / (10n ** (BIGDIGITSMINUSONE - BigInt(digits)))
+            // Ignore the limit and modify the function a bit
+            // if (digits >= BIGDIGITS) {
+            //     throw new RangeError("The amount of iterations is too large!")
+            // }
+            // iterations = repeats.$[3] / (10n ** (BIGDIGITSMINUSONE - BigInt(digits)))
+            var diff = BIGDIGITSMINUSONE - BigInt(digits)
+            iterations = diff <= 0n ? repeats.$[3] * (10n ** -diff) : repeats.$[3] / (10n ** diff)
         } else {
             iterations = BigInt(iterations)
         }
@@ -1869,9 +1932,10 @@ var Hyper
             value = HyperPower(TEN, value)
         }
         var newCategory = BigInt(value.$[1]) + i
-        if (newCategory >= BIGLIMIT) {
-            throw new RangeError("The resulting value is too large!")
-        }
+        // Ignore the limit
+        // if (newCategory >= BIGLIMIT) {
+        //     throw new RangeError("The resulting value is too large!")
+        // }
         value.$[1] = newCategory < 9007199254740992n ? Number(newCategory) : newCategory
         return value
     }
@@ -2022,12 +2086,6 @@ var Hyper
         } else if (signA === -1 && signB === 1) {
             var result = HyperAddBase(a, b)
             return result
-        } else if (signA === 1 && signB === 1) {
-            var result = HyperSubtractBase(a, b)
-            if (result === false) {
-                result = HyperSubtractBase(b, a)
-            }
-            return result
         } else {
             var result = HyperSubtractBase(a, b)
             if (result === false) {
@@ -2044,13 +2102,15 @@ var Hyper
         if (signA === 1 && signB === -1) {
             return HyperAddBase(a, b)
         } else if (signA === -1 && signB === 1) {
+            if (a.$[3] === 0n && b.$[3] === 0n) {
+                b.$[0] = -1
+                return b
+            }
             return false
         } else if (signA === 1 && signB === 1) {
-            var result = HyperSubtractBase(a, b)
-            return result
+            return HyperSubtractBase(a, b)
         } else {
-            var result = HyperSubtractBase(a, b)
-            return result
+            return HyperSubtractBase(b, a)
         }
     }
 
@@ -2604,57 +2664,3 @@ var Hyper
      */
     var TEN = new Hyper("10")
 })()
-
-// Formats a value with certain constraints
-function formatValue(number, additionalDigits) {
-    if (number instanceof Hyper) {
-        return number.format(additionalDigits)
-    }
-    var isBig = typeof number === "bigint" || typeof number === "string"
-    if (!isBig && typeof number !== "number") {
-        console.error("Cannot format a " + (typeof number) + " because it is not a string, number, BigInt, or HyperNumber.")
-    }
-    var string = number.toString(), afterDots = ".", dotIndex = string.indexOf(".")
-    if (dotIndex !== -1) {
-        afterDots = string.slice(dotIndex)
-        string = string.slice(0, dotIndex)
-        if (dotIndex === 0) {
-            string = "0"
-        }
-    }
-
-    if (number < 1e7) {
-        string = string.replace(/\B(?=(.{3})+(?!.))/g, ",")
-        if (additionalDigits != null && additionalDigits != 0) {
-            additionalDigits = parseInt(additionalDigits)
-            if (!isFinite(additionalDigits) || additionalDigits > 1000000) {
-                throw RangeError("Precision " + additionalDigits + " is out of range.")
-            }
-            var diff = additionalDigits - afterDots.length + 1
-            string += (diff < 0 ? afterDots.slice(0, additionalDigits + 1) : (afterDots + "0".repeat(diff)))
-        }
-        return string
-    }
-    var length = string.length
-    var eIndex = string.indexOf("e")
-    if (eIndex !== -1) {
-        length = Number(string.slice(eIndex + 2))
-        string = string.slice(0, eIndex)
-    }
-
-    if (length > Math.min(abbreviationLimit, 303)) {
-        if (isBig) {
-            return string[0] + "." + string[1] + string[2] + string[3] + "e" + (length - 1)
-        }
-        return (string.charCodeAt(1) === 46 ? (string + "000").slice(0, 4) : (string + ".00")) + "e" + length
-    }
-    var mod3 = length % 3
-    var thousandPower = Math.floor((length - 1) / 3)
-    if (mod3 === 0) {
-        return string[0] + string[1] + string[2] + "." + string[3] + string[4] + shortSuffixes[thousandPower]
-    } else if (mod3 === 1) {
-        return string[0] + "." + string[1] + string[2] + string[3] + shortSuffixes[thousandPower]
-    } else if (mod3 === 2) {
-        return string[0] + string[1] + "." + string[2] + string[3] + string[4] + shortSuffixes[thousandPower]
-    }
-}
