@@ -1,5 +1,5 @@
 # hyper-number
-**Now version 1.0.0 after numerous improvements!**
+**Version 1.1.0 update: fixed numerous bugs and errors involved**
 
 HyperNumber is a high-precision large number system capable of handling numbers up to 10^^(1e50) and beyond with customization.
 The base four-term array looks like this: `[sign (1 or -1), category (non-negative number below the maximum safe integer or BigInt otherwise), digitsOfData, data]`
