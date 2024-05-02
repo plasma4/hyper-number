@@ -1181,7 +1181,7 @@ var Hyper
         }
 
         if (typeof exponent === "number") {
-            return fastExp(start, BigInt(exponent))
+            return fastExp(start, BigInt(Math.floor(exponent)))
         } else if (typeof exponent === "bigint") {
             return fastExp(start, exponent)
         }
