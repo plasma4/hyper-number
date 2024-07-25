@@ -10,6 +10,63 @@ var abbreviationLimit = 50
 
 var HDIGITS = 50
 var Hyper
+
+// Format function
+function formatValue(number, additionalDigits) {
+    if (number instanceof Hyper) {
+        return number.format(additionalDigits)
+    }
+    var isBig = typeof number === "bigint" || typeof number === "string"
+    if (!isBig && typeof number !== "number") {
+        console.error("Cannot format a " + (typeof number) + " because it is not a string, number, BigInt, or HyperNumber.")
+    } else if (typeof number === "number" && number >= 1e21) {
+        number = BigInt(number)
+    }
+    var string = number.toString(), afterDots = ".", dotIndex = string.indexOf(".")
+    if (dotIndex !== -1) {
+        afterDots = string.slice(dotIndex)
+        string = string.slice(0, dotIndex)
+        if (dotIndex === 0) {
+            string = "0"
+        }
+    }
+
+    if (number < 1e7) {
+        string = string.replace(/\B(?=(.{3})+(?!.))/g, ",")
+        if (additionalDigits != null && additionalDigits != 0) {
+            additionalDigits = parseInt(additionalDigits)
+            if (!isFinite(additionalDigits) || additionalDigits > 1000000) {
+                throw RangeError("Precision " + additionalDigits + " is out of range.")
+            }
+            var diff = additionalDigits - afterDots.length + 1
+            string += (diff < 0 ? afterDots.slice(0, additionalDigits + 1) : (afterDots + "0".repeat(diff)))
+        }
+        return string
+    }
+    var length = string.length
+    var eIndex = string.indexOf("e")
+    if (eIndex !== -1) {
+        length = Number(string.slice(eIndex + 2))
+        string = string.slice(0, eIndex)
+    }
+
+    if (length > Math.min(abbreviationLimit, 303)) {
+        if (isBig) {
+            return string[0] + "." + string[1] + string[2] + string[3] + "e" + (length - 1)
+        }
+        return (string.charCodeAt(1) === 46 ? (string + "000").slice(0, 4) : (string + ".00")) + "e" + length
+    }
+    var mod3 = length % 3
+    var thousandPower = Math.floor((length - 1) / 3)
+    if (mod3 === 0) {
+        return string[0] + string[1] + string[2] + "." + string[3] + string[4] + shortSuffixes[thousandPower]
+    } else if (mod3 === 1) {
+        return string[0] + "." + string[1] + string[2] + string[3] + shortSuffixes[thousandPower]
+    } else if (mod3 === 2) {
+        return string[0] + string[1] + "." + string[2] + string[3] + string[4] + shortSuffixes[thousandPower]
+    }
+}
+
 (function () {
     var BIGDIGITS = 50n, DIGITSMINUSONE = 49, BIGDIGITSMINUSONE = 49n, REPEATSTR = "0000000000000000000000000000000000000000000000000", BIGONE = 10000000000000000000000000000000000000000000000000n, BIGONETENTH = 1000000000000000000000000000000000000000000000000n, BIGONETENTHPOWTEN = 1000000000000000000000000000000000000000n, DIGITSOFDIGITS = 2, BIGLIMIT = 100000000000000000000000000000000000000000000000000n, FOURLIMIT = 400000000000000000000000000000000000000000000000000n, TWOBIG = 20000000000000000000000000000000000000000000000000n, LIMITMINUSONE = 99999999999999999999999999999999999999999999999999n, DOUBLELIMITDIVTEN = 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000n, DOUBLELIMIT = 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000n, DIGITSODD = false, RANDOMSIZE = 8, RANDOMMODULO = 0, RANDOMREPEAT = 1
 
