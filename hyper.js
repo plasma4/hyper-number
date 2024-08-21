@@ -1177,7 +1177,7 @@ var Hyper
                 value.$ = new Hyper(value.$[2] + 1).$
             }
         } else {
-            value.$[1] = value.$[1]
+            value.$[1]--
         }
         return value
     }
