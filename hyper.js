@@ -1172,7 +1172,7 @@ var Hyper
             if (typeof digits == "bigint") {
                 value.$ = new Hyper(digits + 1n).$
             } else if (value.$[2] <= 0) {
-                value = new Hyper()
+                value.$ = [1, 0, 0, 0n]
             } else {
                 value.$ = new Hyper(digits + 1).$
             }
@@ -2521,7 +2521,7 @@ var Hyper
      * @returns {Hyper}
      */
     Hyper.prototype.digits = function (noClone) {
-        return HyperDigits(this, value)
+        return HyperDigits(this, noClone)
     }
 
     /**
