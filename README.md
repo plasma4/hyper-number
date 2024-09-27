@@ -9,4 +9,4 @@ Within each instance of `Hyper`, there is a property, `$`. This property contain
 
 Create a new instance using `Hyper(string | number | bigint | Hyper)` or `new Hyper(string | number | bigint | Hyper)`. Read the source code for documentation!
 
-**Try out formatting and see how the array works [HERE](https://plasma4.github.io/hyper-number/).** (You can set the precision to any integer from 16 to 10,000,000 when actually using.)
+**Try out formatting and see how the array works [HERE](https://plasma4.github.io/hyper-number/).** (You can set the precision to any integer from 16 to 10,000,000 when actually using the algorithm.)

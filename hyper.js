@@ -1307,6 +1307,100 @@ var Hyper
         return result === false ? false : result
     }
 
+    function HyperFloor(start, noClone) {
+        var value = noClone ? start : new Hyper(start)
+        if (value.$[0] === 1) {
+            return HyperFloorBase(value, noClone)
+        } else {
+            return HyperCeilBase(value, noClone)
+        }
+    }
+
+    function HyperRound(start, noClone) {
+        var value = noClone ? start : new Hyper(start)
+        if (value.$[0] === 1) {
+            return HyperRoundBase(value, noClone)
+        } else {
+            return HyperRoundOtherBase(value, noClone)
+        }
+    }
+
+    function HyperRoundOther(start, noClone) {
+        var value = noClone ? start : new Hyper(start)
+        if (value.$[0] === 1) {
+            return HyperRoundOtherBase(value, noClone)
+        } else {
+            return HyperRoundBase(value, noClone)
+        }
+    }
+
+    function HyperCeil(start, noClone) {
+        var value = noClone ? start : new Hyper(start)
+        if (value.$[0] === 1) {
+            return HyperCeilBase(value, noClone)
+        } else {
+            return HyperFloorBase(value, noClone)
+        }
+    }
+
+    function HyperFloorBase(value, noClone) {
+        if (value.$[1] === 0) {
+            var digits = value.$[2]
+            if (digits < HDIGITS) {
+                if (digits < 0) {
+                    value.$ = [value.$[0], 0, 0, 0n]
+                    return value
+                }
+                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
+                value.$[3] = value.$[3] / diffPower * diffPower
+            }
+        }
+        return value
+    }
+
+    function HyperRoundBase(value, noClone) {
+        if (value.$[1] === 0) {
+            var digits = value.$[2]
+            if (digits < HDIGITS) {
+                var data = value.$[3]
+                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
+                var flooredData = (data / diffPower) * diffPower
+                value.$[3] = data < (flooredData + (diffPower >> 1n)) ? flooredData : (flooredData + diffPower)
+            }
+        }
+        return value
+    }
+
+    function HyperRoundOtherBase(value, noClone) {
+        if (value.$[1] === 0) {
+            var digits = value.$[2]
+            if (digits < HDIGITS) {
+                var data = value.$[3]
+                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
+                var flooredData = (data / diffPower) * diffPower
+                value.$[3] = data <= (flooredData + (diffPower >> 1n)) ? flooredData : (flooredData + diffPower)
+            }
+        }
+        return value
+    }
+
+    function HyperCeilBase(value, noClone) {
+        if (value.$[1] === 0) {
+            var digits = value.$[2]
+            if (digits < HDIGITS) {
+                var data = value.$[3]
+                if (digits < 0) {
+                    value.$ = data === 0n ? [value.$[0], 0, 0, 0n] : [value.$[0], 0, 0, BIGONE]
+                    return value
+                }
+                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
+                var flooredData = (data / diffPower) * diffPower
+                value.$[3] = flooredData === data ? flooredData : (flooredData + diffPower)
+            }
+        }
+        return value
+    }
+
     /**
      * Returns the smaller of two numbers.
      * @param {string | number | bigint | Hyper} value The value to compare to.
@@ -1387,19 +1481,7 @@ var Hyper
      * @returns {Hyper}
      */
     Hyper.prototype.floor = function (noClone) {
-        var value = noClone ? this : new Hyper(this)
-        if (value.$[1] === 0) {
-            var digits = value.$[2]
-            if (digits < HDIGITS) {
-                if (digits < 0) {
-                    value.$ = [1, 0, 0, 0n]
-                    return value
-                }
-                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
-                value.$[3] = value.$[3] / diffPower * diffPower
-            }
-        }
-        return value
+        return HyperFloor(this, noClone)
     }
 
     /**
@@ -1408,19 +1490,7 @@ var Hyper
      * @returns {Hyper}
      */
     Hyper.floor = function (value) {
-        value = new HyperNumber(value)
-        if (value.$[1] === 0) {
-            var digits = value.$[2]
-            if (digits < HDIGITS) {
-                if (digits < 0) {
-                    value.$ = [1, 0, 0, 0n]
-                    return value
-                }
-                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
-                value.$[3] = value.$[3] / diffPower * diffPower
-            }
-        }
-        return value
+        return HyperFloor(new Hyper(value), true)
     }
 
     /**
@@ -1429,17 +1499,7 @@ var Hyper
      * @returns {Hyper}
      */
     Hyper.prototype.round = function (noClone) {
-        var value = noClone ? this : new Hyper(this)
-        if (value.$[1] === 0) {
-            var digits = value.$[2]
-            if (digits < HDIGITS) {
-                var data = value.$[3]
-                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
-                var flooredData = (data / diffPower) * diffPower
-                value.$[3] = data < (flooredData + (diffPower >> 1n)) ? flooredData : (flooredData + diffPower)
-            }
-        }
-        return value
+        return HyperRound(this, noClone)
     }
 
     /**
@@ -1448,17 +1508,7 @@ var Hyper
      * @returns {Hyper}
      */
     Hyper.round = function (value) {
-        value = new HyperNumber(value)
-        if (value.$[1] === 0) {
-            var digits = value.$[2]
-            if (digits < HDIGITS) {
-                var data = value.$[3]
-                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
-                var flooredData = (data / diffPower) * diffPower
-                value.$[3] = data < (flooredData + (diffPower >> 1n)) ? flooredData : (flooredData + diffPower)
-            }
-        }
-        return value
+        return HyperRound(new Hyper(value), true)
     }
 
     /**
@@ -1467,17 +1517,7 @@ var Hyper
      * @returns {Hyper}
      */
     Hyper.prototype.roundOther = function (noClone) {
-        var value = noClone ? this : new Hyper(this)
-        if (value.$[1] === 0) {
-            var digits = value.$[2]
-            if (digits < HDIGITS) {
-                var data = value.$[3]
-                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
-                var flooredData = (data / diffPower) * diffPower
-                value.$[3] = data <= (flooredData + (diffPower >> 1n)) ? flooredData : (flooredData + diffPower)
-            }
-        }
-        return value
+        return HyperRoundOther(this, noClone)
     }
 
     /**
@@ -1486,17 +1526,7 @@ var Hyper
      * @returns {Hyper}
      */
     Hyper.roundOther = function (value) {
-        value = new HyperNumber(value)
-        if (value.$[1] === 0) {
-            var digits = value.$[2]
-            if (digits < HDIGITS) {
-                var data = value.$[3]
-                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
-                var flooredData = (data / diffPower) * diffPower
-                value.$[3] = data <= (flooredData + (diffPower >> 1n)) ? flooredData : (flooredData + diffPower)
-            }
-        }
-        return value
+        return HyperRoundOther(new Hyper(value), true)
     }
 
     /**
@@ -1511,7 +1541,7 @@ var Hyper
             if (digits < HDIGITS) {
                 var data = value.$[3]
                 if (digits < 0) {
-                    value.$ = data === 0n ? [1, 0, 0, 0n] : [1, 0, 0, BIGONE]
+                    value.$ = data === 0n ? [0, 0, 0n] : [0, 0, BIGONE]
                     return value
                 }
                 var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
@@ -1534,7 +1564,7 @@ var Hyper
             if (digits < HDIGITS) {
                 var data = value.$[3]
                 if (digits < 0) {
-                    value.$ = data === 0n ? [1, 0, 0, 0n] : [1, 0, 0, BIGONE]
+                    value.$ = data === 0n ? [0, 0, 0n] : [0, 0, BIGONE]
                     return value
                 }
                 var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
@@ -1888,7 +1918,7 @@ var Hyper
                 return sign + formatValue(startingDigits.slice(0, digits + 1))
             } else {
                 if (digits < -1) {
-                    return formatValue("0." + "0".repeat(-(digits + 1)) + startingDigits, additionalDigits)
+                    return formatValue((this.$[0] === 1 ? "0." : "-0.") + "0".repeat(-(digits + 1)) + startingDigits, additionalDigits)
                 }
                 return sign + formatValue(startingDigits.slice(0, digits + 1) + "." + startingDigits.slice(digits + 1), additionalDigits)
             }
