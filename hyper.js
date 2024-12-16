@@ -1365,7 +1365,13 @@ var Hyper
                 var data = value.$[3]
                 var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
                 var flooredData = (data / diffPower) * diffPower
-                value.$[3] = data < (flooredData + (diffPower >> 1n)) ? flooredData : (flooredData + diffPower)
+                data = data < (flooredData + (diffPower >> 1n)) ? flooredData : (flooredData + diffPower)
+                if (data >= BIGLIMIT) {
+                    value.$[3] = data / 10n
+                    value.$[2]++
+                } else {
+                    value.$[3] = data
+                }
             }
         }
         return value
@@ -1378,7 +1384,13 @@ var Hyper
                 var data = value.$[3]
                 var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
                 var flooredData = (data / diffPower) * diffPower
-                value.$[3] = data <= (flooredData + (diffPower >> 1n)) ? flooredData : (flooredData + diffPower)
+                data = data <= (flooredData + (diffPower >> 1n)) ? flooredData : (flooredData + diffPower)
+                if (data >= BIGLIMIT) {
+                    value.$[3] = data / 10n
+                    value.$[2]++
+                } else {
+                    value.$[3] = data
+                }
             }
         }
         return value
@@ -1395,7 +1407,13 @@ var Hyper
                 }
                 var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
                 var flooredData = (data / diffPower) * diffPower
-                value.$[3] = flooredData === data ? flooredData : (flooredData + diffPower)
+                data = flooredData === data ? flooredData : (flooredData + diffPower)
+                if (data >= BIGLIMIT) {
+                    value.$[3] = data / 10n
+                    value.$[2]++
+                } else {
+                    value.$[3] = data
+                }
             }
         }
         return value
@@ -1535,21 +1553,7 @@ var Hyper
      * @returns {Hyper}
      */
     Hyper.prototype.ceil = function (noClone) {
-        var value = noClone ? this : new Hyper(this)
-        if (value.$[1] === 0) {
-            var digits = value.$[2]
-            if (digits < HDIGITS) {
-                var data = value.$[3]
-                if (digits < 0) {
-                    value.$ = data === 0n ? [0, 0, 0n] : [0, 0, BIGONE]
-                    return value
-                }
-                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
-                var flooredData = (data / diffPower) * diffPower
-                value.$[3] = flooredData === data ? flooredData : (flooredData + diffPower)
-            }
-        }
-        return value
+        return HyperCeil(this, noClone)
     }
 
     /**
@@ -1558,21 +1562,7 @@ var Hyper
      * @returns {Hyper}
      */
     Hyper.ceil = function (value) {
-        value = new HyperNumber(value)
-        if (value.$[1] === 0) {
-            var digits = value.$[2]
-            if (digits < HDIGITS) {
-                var data = value.$[3]
-                if (digits < 0) {
-                    value.$ = data === 0n ? [0, 0, 0n] : [0, 0, BIGONE]
-                    return value
-                }
-                var diffPower = powerOfTenBig(DIGITSMINUSONE - digits)
-                var flooredData = (data / diffPower) * diffPower
-                value.$[3] = flooredData === data ? flooredData : (flooredData + diffPower)
-            }
-        }
-        return value
+        return HyperCeil(new Hyper(value), true)
     }
 
     /**
