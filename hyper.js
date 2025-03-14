@@ -108,7 +108,7 @@ var Hyper
             this.$ = [1, 0, 0, 0n]
             return
         } else {
-            var dollar = null;
+            var dollar = null
             (function (value) {
                 var string
                 if (typeof value === "string") {
@@ -442,7 +442,6 @@ var Hyper
     }
 
     function HyperAddBase(start, num) {
-        var aData = start.$[3]
         var bData = num.$[3]
         if (start.$[3] === 0n) {
             return num
